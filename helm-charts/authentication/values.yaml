@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/materials-resources/authsite:latest
+  pullPolicy: always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "v0.1.0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -82,113 +82,20 @@ tolerations: []
 affinity: {}
 
 kratos:
-  config:
-    serve:
-      public:
-        base_url: https://auth.materials-resources.com/kratos/
-        cors:
-          enabled: true
-          allowed_origins:
-            - https://auth.materials-resources.com/
-          allowed_methods:
-            - POST
-            - GET
-            - PUT
-            - PATCH
-            - DELETE
-          allowed_headers:
-            - Authorization
-            - Cookie
-            - Content-Type
-          exposed_headers:
-            - Content-Type
-            - Set-Cookie
-    dsn: mysql://root:mariadb@tcp(maria-db:3306)/kratos?sql_mode=''
-    secrets:
-      cookie:
-        - PLEASE-CHANGE-ME-I-AM-VERY-INSECURE
-      cipher:
-        - 32-LONG-SECRET-NOT-SECURE-AT-ALL
-    ciphers:
-      algorithm: xchacha20-poly1305
-    identity:
-      default_schema_id: default
-      schemas:
-        - id: default
-          url: file:///etc/config/identity.default.schema.json
-    courier:
-      smtp:
-        connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
-    selfservice:
-      default_browser_return_url: https://auth.materials-resources.com/ui
-      allowed_return_urls:
-        - https://auth.materials-resources.com
-      flows:
-        error:
-          ui_url: https://auth.materials-resources.com/ui/error
-        recovery:
-          use: code
-          enabled: true
-          ui_url: https://auth.materials-resources.com/ui/recovery
-          lifespan: 10m
-        settings:
-          required_aal: highest_available
-          ui_url: https://auth.materials-resources.com/ui/settings
-          lifespan: 10m
-        login:
-          ui_url: https://auth.materials-resources.com/ui/login
-          lifespan: 10m
-      methods:
-        password:
-          enabled: true
-        totp:
-          config:
-            issuer: Kratos
-          enabled: true
-        lookup_secret:
-          enabled: true
-        link:
-          enabled: true
-        code:
-          enabled: true
-        oidc:
-          enabled: true
-    automigration:
+  ingress:
+    public:
+      annotations:
+        cert-manager.io/cluster-issuer: production-issuer
+        traefik.ingress.kubernetes.io/router.middlewares: auth-strip-prefix@kubernetescrd
+      tls:
+        - secretName: auth-cert
+          hosts:
+            - auth.materials-resources.com
       enabled: true
-    identitySchemas:
-      "identity.default.schema.json": |
-        {
-          "$id": "https://schemas.ory.sh/presets/kratos/identity.email.schema.json",
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "title": "Person",
-          "type": "object",
-          "properties": {
-            "traits": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "email",
-                  "title": "E-Mail",
-                  "ory.sh/kratos": {
-                    "credentials": {
-                      "password": {
-                        "identifier": true
-                      }
-                    },
-                    "recovery": {
-                      "via": "email"
-                    },
-                    "verification": {
-                      "via": "email"
-                    }
-                  }
-                }
-              },
-              "required": [
-                "email"
-              ],
-              "additionalProperties": false
-            }
-          }
-        }
+      hosts:
+        - host: auth.materials-resources.com
+          paths:
+            - path: /kratos
+              pathType: ImplementationSpecific
+  kratos:
+    config: {}
