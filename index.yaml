@@ -3,12 +3,16 @@ entries:
   authentication:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-06-28T13:04:12.328697-04:00"
+    created: "2023-06-28T13:56:37.194973-04:00"
+    dependencies:
+    - name: kratos
+      repository: https://k8s.ory.sh/helm/charts
+      version: 0.33.2
     description: A Helm chart for Kubernetes
-    digest: 1dbff9836530cc1d64e67f994e8a9071f6f646f2c27dbbdf549051b45f701c35
+    digest: 20a9e2c9af58b74b01211412841472eb599faa938f686aef10179d97d6904a8d
     name: authentication
     type: application
     urls:
     - https://materials-resources.github.io/k8s/authentication-0.1.0.tgz
     version: 0.1.0
-generated: "2023-06-28T13:04:12.328216-04:00"
+generated: "2023-06-28T13:56:37.193124-04:00"
